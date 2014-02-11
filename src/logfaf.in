@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#  Copyright (c) 2014, Facebook, Inc.
+#  All rights reserved.
+#
+#  This source code is licensed under the BSD-style license found in the
+#  LICENSE file in the root directory of this source tree. An additional grant
+#  of patent rights can be found in the PATENTS file in the same directory.
+
+set -e -u
+
+function help {
+    >&2 echo "Usage: ${0} [-h] [-S servername] [-P port] <command>"
+    >&2 echo " -h                show help"
+    >&2 echo " -S servername     set syslog server name (default: localhost)"
+    >&2 echo " -P port           set syslog port (default: 514)"
+}
+
+while getopts :hS:P: OPT; do
+    case ${OPT} in
+        h)
+        help
+        exit 1
+        ;;
+
+        S)
+        export LIBLOGFAF_SERVER=${OPTARG}
+        ;;
+
+        P)
+        export LIBLOGFAF_PORT=${OPTARG}
+        ;;
+
+        \?)
+        help
+        exit 1
+        ;;
+    esac
+done
+shift $((OPTIND-1))
+
+LIB_PATH="@libdir@/liblogfaf.so"
+LD_PRELOAD="${LIB_PATH}:${LD_PRELOAD:-}" exec "$@"
