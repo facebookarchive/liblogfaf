@@ -39,5 +39,10 @@ while getopts :hS:P: OPT; do
 done
 shift $((OPTIND-1))
 
-LIB_PATH="@libdir@/liblogfaf.so"
-LD_PRELOAD="${LIB_PATH}:${LD_PRELOAD:-}" exec "$@"
+PLATFORM=$(uname)
+if [[ "$PLATFORM" == "Darwin" ]]; then
+    DYLD_FORCE_FLAT_NAMESPACE=1 DYLD_INSERT_LIBRARIES="@libdir@/liblogfaf.0.dylib" exec "$@"
+else
+    LIB_PATH="@libdir@/liblogfaf.so"
+    LD_PRELOAD="${LIB_PATH}:${LD_PRELOAD:-}" exec "$@"
+fi
