@@ -21,6 +21,11 @@
 #include <limits.h>
 #include <pthread.h>
 
+#if defined(__APPLE__)
+#include <crt_externs.h>
+#define HOST_NAME_MAX 255
+#endif
+
 #define MAX_MESSAGE_LEN 65536
 
 // From RFC3164
@@ -64,11 +69,15 @@ static void set_defaults(SharedData *sd) {
 }
 
 static void init_progname(SharedData *sd) {
+#if defined(__APPLE__)
+    sscanf(*_NSGetProgname(), "%1023s", sd->progname);
+#else
     FILE* cmdline = fopen("/proc/self/cmdline", "rb");
     if (cmdline) {
         fscanf(cmdline, "%1023s", sd->progname);
         fclose(cmdline);
     }
+#endif
 }
 
 static void init_hostname(SharedData *sd) {
