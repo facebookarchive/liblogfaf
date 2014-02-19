@@ -21,11 +21,7 @@
 #include <limits.h>
 #include <pthread.h>
 
-#if defined(__APPLE__)
-#include <crt_externs.h>
-#define HOST_NAME_MAX 255
-#endif
-
+#define MAX_PROGNAME 1024
 #define MAX_MESSAGE_LEN 65536
 
 // From RFC3164
@@ -33,8 +29,8 @@ static const char *months[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 typedef struct {
-    char hostname[HOST_NAME_MAX];
-    char progname[1024];
+    char hostname[_POSIX_HOST_NAME_MAX];
+    char progname[MAX_PROGNAME];
 
     int syslog_facility;
     const char *syslog_tag;
@@ -69,15 +65,10 @@ static void set_defaults(SharedData *sd) {
 }
 
 static void init_progname(SharedData *sd) {
-#if defined(__APPLE__)
-    sscanf(*_NSGetProgname(), "%1023s", sd->progname);
-#else
-    FILE* cmdline = fopen("/proc/self/cmdline", "rb");
-    if (cmdline) {
-        fscanf(cmdline, "%1023s", sd->progname);
-        fclose(cmdline);
+    const char* progname = getprogname();
+    if (progname) {
+        snprintf(sd->progname, MAX_PROGNAME, "%s", progname);
     }
-#endif
 }
 
 static void init_hostname(SharedData *sd) {
