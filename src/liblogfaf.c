@@ -82,7 +82,7 @@ static void init_progname(SharedData *sd) {
 
 static void init_hostname(SharedData *sd) {
     if (gethostname(sd->hostname, sizeof(sd->hostname)) != 0) {
-        perror("gethostname() error");
+        perror("liblogfaf: gethostname() error");
         exit(1);
     }
     // We don't really need FQDN, so we truncate the hostname up until
@@ -116,7 +116,7 @@ static void init_connection(SharedData *sd) {
     gai_error = getaddrinfo(server_hostname, server_port,
                             &hints, &sd->serveraddr);
     if (gai_error != 0) {
-        fprintf(stderr, "ERROR: getaddrinfo() failed: %s\n",
+        fprintf(stderr, "liblogfaf: getaddrinfo() failed: %s\n",
                 gai_strerror(gai_error));
         exit(1);
     }
@@ -124,7 +124,7 @@ static void init_connection(SharedData *sd) {
     if ((sd->sockfd = socket(sd->serveraddr->ai_family,
                              sd->serveraddr->ai_socktype,
                              sd->serveraddr->ai_protocol)) < 0) {
-        perror("Cannot create socket");
+        perror("liblogfaf: cannot create socket");
         exit(1);
     }
 }
@@ -153,30 +153,48 @@ __attribute__((constructor)) static void _liblogfaf_init(void) {
     init_progname(&shared_data);
     init_hostname(&shared_data);
     init_connection(&shared_data);
-    pthread_mutex_init(&shared_data.lock, NULL);
+    if (pthread_mutex_init(&shared_data.lock, NULL) != 0) {
+        fprintf(stderr, "liblogfaf: pthread_mutex_init() failed\n");
+        exit(1);
+    }
     set_defaults(&shared_data);
 }
 
 __attribute__((destructor)) static void _liblogfaf_fini(void) {
     DBG(("liblogfaf: fini()\n"));
-    pthread_mutex_destroy(&shared_data.lock);
+    if (pthread_mutex_destroy(&shared_data.lock) != 0) {
+        fprintf(stderr, "liblogfaf: pthread_mutex_destroy() failed\n");
+        exit(1);
+    }
 }
 
 void openlog(const char *ident, int option, int facility) {
     DBG(("liblogfaf: openlog(%s, %d, %d)\n", ident, option, facility));
-    pthread_mutex_lock(&shared_data.lock);
+    if (pthread_mutex_lock(&shared_data.lock) != 0) {
+        fprintf(stderr, "liblogfaf: pthread_mutex_lock() failed\n");
+        exit(1);
+    }
     shared_data.syslog_facility = facility;
     if (ident)
         shared_data.syslog_tag = ident;
-    pthread_mutex_unlock(&shared_data.lock);
+    if (pthread_mutex_unlock(&shared_data.lock) != 0) {
+        fprintf(stderr, "liblogfaf: pthread_mutex_unlock() failed\n");
+        exit(1);
+    }
     // making use of the `option` parameter can be added here if you need it
 }
 
 void closelog(void) {
     DBG(("liblogfaf: closelog()\n"));
-    pthread_mutex_lock(&shared_data.lock);
+    if (pthread_mutex_lock(&shared_data.lock) != 0) {
+        fprintf(stderr, "liblogfaf: pthread_mutex_lock() failed\n");
+        exit(1);
+    }
     set_defaults(&shared_data);
-    pthread_mutex_unlock(&shared_data.lock);
+    if (pthread_mutex_unlock(&shared_data.lock) != 0) {
+        fprintf(stderr, "liblogfaf: pthread_mutex_unlock() failed\n");
+        exit(1);
+    }
 }
 
 void __syslog_chk(int priority, int flag, const char *format, ...) {
