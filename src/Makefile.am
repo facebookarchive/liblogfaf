@@ -3,7 +3,8 @@ CFLAGS += -Wall
 
 lib_LTLIBRARIES = liblogfaf.la
 liblogfaf_la_SOURCES = liblogfaf.c
-liblogfaf_la_LIBADD = -ldl
+
+liblogfaf_la_LIBADD=@DL_LDLIBS@
 
 nodist_bin_SCRIPTS = logfaf
 dist_noinst_DATA = logfaf.in
