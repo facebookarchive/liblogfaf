@@ -24,6 +24,8 @@
 #if defined(__APPLE__)
 #include <crt_externs.h>
 #define HOST_NAME_MAX 255
+#else
+#define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
 #endif
 
 #define MAX_MESSAGE_LEN 65536
@@ -71,6 +73,8 @@ static void set_defaults(SharedData *sd) {
 static void init_progname(SharedData *sd) {
 #if defined(__APPLE__)
     sscanf(*_NSGetProgname(), "%1023s", sd->progname);
+#elif defined(__FreeBSD__)
+    sscanf(getprogname(), "%1023s", sd->progname);
 #else
     FILE* cmdline = fopen("/proc/self/cmdline", "rb");
     if (cmdline) {

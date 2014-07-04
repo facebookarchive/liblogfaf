@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #  Copyright (c) 2014, Facebook, Inc.
 #  All rights reserved.
@@ -9,8 +9,8 @@
 
 set -e -u
 
-function help {
-    >&2 echo "Usage: ${0} [-h] [-S servername] [-P port] <command>"
+help() {
+    >&2 echo "Usage: ${0##*/} [-h] [-S servername] [-P port] <command>"
     >&2 echo " -h                show help"
     >&2 echo " -S servername     set syslog server name (default: localhost)"
     >&2 echo " -P port           set syslog port (default: 514)"
@@ -39,8 +39,8 @@ while getopts :hS:P: OPT; do
 done
 shift $((OPTIND-1))
 
-PLATFORM=$(uname)
-if [[ "$PLATFORM" == "Darwin" ]]; then
+PLATFORM=$(uname -s)
+if [ "$PLATFORM" == "Darwin" ]; then
     DYLD_FORCE_FLAT_NAMESPACE=1 DYLD_INSERT_LIBRARIES="@libdir@/liblogfaf.0.dylib" exec "$@"
 else
     LIB_PATH="@libdir@/liblogfaf.so"

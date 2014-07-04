@@ -26,7 +26,21 @@ if test x"$debug_enabled" != x"yes"; then
     AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
 fi
 
+SYSTEM=`uname -s 2>/dev/null`
+case "$SYSTEM" in
+	"Linux"|"Darwin")
+		DL_LDLIBS="-ldl"
+		;;
+	"FreeBSD")
+		DL_LDLIBS="-lc"
+		;;
+	*)
+		AC_MSG_ERROR(["Unsupported platform: $SYSTEM"])
+		;;
+esac
+
 AC_SUBST([AM_CFLAGS])
+AC_SUBST([DL_LDLIBS])
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
