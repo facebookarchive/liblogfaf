@@ -170,6 +170,7 @@ __attribute__((destructor)) static void _liblogfaf_fini(void) {
         fprintf(stderr, "liblogfaf: pthread_mutex_destroy() failed\n");
         exit(1);
     }
+    freeaddrinfo(shared_data.serveraddr);
 }
 
 void openlog(const char *ident, int option, int facility) {
