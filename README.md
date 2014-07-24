@@ -14,8 +14,7 @@ Please note that liblogfaf should *not* be used in an environment where
 reliable log message delivery is required.
 
 ## Requirements
-liblogfaf currently only works on Linux as it relies on /proc/ filesystem to
-determine process cmdline.
+liblogfaf is known to work on Linux, FreeBSD, and OS X.
 
 ## Building and installing liblogfaf
 * Ensure you have libtool, autoconf, and automake installed;
