@@ -42,6 +42,7 @@ typedef struct {
     const char *syslog_tag;
 
     struct addrinfo *serveraddr;
+    struct addrinfo *bind_ip;
     int sockfd;
 
     pthread_mutex_t lock;
@@ -108,6 +109,9 @@ static void init_connection(SharedData *sd) {
     if (server_port == NULL)
         server_port = "514";
 
+    char *bind_ip;
+    bind_ip = getenv("LIBLOGFAF_BIND_IP");
+
     int gai_error;
     struct addrinfo hints;
 
@@ -130,6 +134,22 @@ static void init_connection(SharedData *sd) {
                              sd->serveraddr->ai_protocol)) < 0) {
         perror("liblogfaf: cannot create socket");
         exit(1);
+    }
+
+    if (bind_ip) {
+        gai_error = getaddrinfo(bind_ip, 0,
+                                &hints, &sd->bind_ip);
+        if (gai_error != 0) {
+            fprintf(stderr,
+                    "liblogfaf: getaddrinfo() failed for "
+                    "LIBLOGFAF_BIND_IP: %s\n",
+                    gai_strerror(gai_error));
+            exit(1);
+        }
+        if (bind(sd->sockfd, sd->bind_ip->ai_addr, sd->bind_ip->ai_addrlen)) {
+            perror("liblogfaf: bind() failed");
+            exit(1);
+        }
     }
 }
 

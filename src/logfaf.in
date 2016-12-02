@@ -10,13 +10,14 @@
 set -e -u
 
 help() {
-    >&2 echo "Usage: ${0##*/} [-h] [-S servername] [-P port] <command>"
+    >&2 echo "Usage: ${0##*/} [-h] [-S servername] [-P port] [-B ip] <command>"
     >&2 echo " -h                show help"
     >&2 echo " -S servername     set syslog server name (default: localhost)"
     >&2 echo " -P port           set syslog port (default: 514)"
+    >&2 echo " -B ip             bind to ip (default: no binding)"
 }
 
-while getopts :hS:P: OPT; do
+while getopts :hS:P:B: OPT; do
     case ${OPT} in
         h)
         help
@@ -29,6 +30,10 @@ while getopts :hS:P: OPT; do
 
         P)
         export LIBLOGFAF_PORT=${OPTARG}
+        ;;
+
+        B)
+        export LIBLOGFAF_BIND_IP=${OPTARG}
         ;;
 
         \?)
