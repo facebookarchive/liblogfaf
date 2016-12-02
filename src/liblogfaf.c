@@ -12,12 +12,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <time.h>
-#include <errno.h>
 #include <limits.h>
 #include <pthread.h>
 
@@ -136,15 +133,15 @@ static void init_connection(SharedData *sd) {
 static void logmessage(SharedData *sd, int priority, const char *message) {
     DBG(("liblogfaf: logmessage(%d, %s)\n", priority, message));
     time_t ts;
-    struct tm *time_tm;
+    struct tm time_tm;
     char msg[MAX_MESSAGE_LEN];
     ts = time(NULL);
-    time_tm = localtime(&ts);
+    localtime_r(&ts, &time_tm);
 
     snprintf(msg, MAX_MESSAGE_LEN, "<%u>%s %2d %02d:%02d:%02d %s %s: %s",
              priority + sd->syslog_facility * 8,
-             months[time_tm->tm_mon], time_tm->tm_mday,
-             time_tm->tm_hour, time_tm->tm_min, time_tm->tm_sec,
+             months[time_tm.tm_mon], time_tm.tm_mday,
+             time_tm.tm_hour, time_tm.tm_min, time_tm.tm_sec,
              (char *)&sd->hostname, sd->syslog_tag, message);
 
     // We want fire-and-forget, so lack of error checking here is intentional
