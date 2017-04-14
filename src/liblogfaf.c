@@ -20,6 +20,9 @@
 
 #if defined(__APPLE__)
 #include <crt_externs.h>
+#endif
+
+#if defined(__APPLE__) || defined(__FreeBSD__)
 #define HOST_NAME_MAX 255
 #else
 #define HOST_NAME_MAX _POSIX_HOST_NAME_MAX
