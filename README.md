@@ -33,4 +33,4 @@ with liblogfaf enabled. For example, if you run:
 You should see logger sending syslog UDP messages to 127.0.0.1:514
 
 ## License
-liblogfaf is BSD-licensed. We also provide an additional patent grant.
+MIT license
